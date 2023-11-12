@@ -1,6 +1,12 @@
 uft-ml-course-group-project
 ==============================
 
+Data Source:
+
+Canada: CO2 Country Profile - Our World in Data (https://ourworldindata.org/co2/country/canada?country=~CAN)
+
+owid/co2-data: Data on CO2 and greenhouse gas emissions by Our World in Data (github.com) (https://github.com/owid/co2-data)
+
 co2 emission prediction 
 
 Project Organization
