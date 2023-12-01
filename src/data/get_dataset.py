@@ -61,12 +61,6 @@ def get_extra_features(df: DataFrame, to_merge_on, how: Literal['inner', 'left',
     median_age_df.rename(columns={'Median age - Sex: all - Age: all - Variant: estimates': 'Median age'}, inplace=True)
     merged_df = pd.merge(merged_df, median_age_df, on=to_merge_on, how=how, copy=False)
 
-    population = pd.read_csv(
-        "https://dataset-ml-project.s3.us-east-2.amazonaws.com/population.csv")  # source: https://ourworldindata.org
-    # /grapher/population
-    population.rename(columns=rename_dict, inplace=True)
-    merged_df = pd.merge(merged_df, population, on=to_merge_on, how=how, copy=False)
-
     return merged_df
 
 
