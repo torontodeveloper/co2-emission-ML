@@ -57,14 +57,17 @@ def get_extra_features(df: DataFrame, to_merge_on, how: Literal['inner', 'left',
     # /grapher/median-age
     median_age_df.rename(columns=rename_dict, inplace=True)
     median_age_df.drop(columns='Median age - Sex: all - Age: all - Variant: medium', inplace=True)
-    median_age_df.dropna(subset='Median age - Sex: all - Age: all - Variant: estimates', inplace=True)
+    median_age_df.rename(columns={'Median age - Sex: all - Age: all - Variant: estimates': 'median_age'}, inplace=True)
+    median_age_df.dropna(subset='median_age', inplace=True)
     merged_df = pd.merge(merged_df, median_age_df, on=to_merge_on, how=how, copy=False)
 
     columns = merged_df.columns
     new_columns = [x.lower().replace(" ", "_") for x in columns]
-    merged_df.replace(columns, new_columns)
+    for i in range(0, len(columns)):
+        merged_df.rename(columns={columns[i]: new_columns[i]}, inplace=True)
+
     return merged_df
 
 
 if __name__ == '__main__':
-    get_merged_datasets()
+    print(get_merged_datasets().columns)
