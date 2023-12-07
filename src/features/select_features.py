@@ -46,7 +46,7 @@ def get_features_no_data_leaks():
     return feature_list
 
 
-def get_important_features():
+def get_important_features(num=20):
     data_pipeline = Pipeline(steps=[("imputer", SimpleImputer(strategy="median")), ('std_scalar', StandardScaler())])
     feature_list = get_features_no_data_leaks()
     x = dataframe[feature_list]
@@ -62,4 +62,4 @@ def get_important_features():
     feature_importance_data = pd.DataFrame(decision_tree.feature_importances_, index=feature_list,
                                            columns=["Importance"])
     feature_importance_data.sort_values(by='Importance', ascending=False, inplace=True)
-    return feature_importance_data.head(20).index.tolist()
+    return feature_importance_data.head(num).index.tolist()

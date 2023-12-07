@@ -59,13 +59,26 @@ def get_extra_features(df: DataFrame, to_merge_on, how: Literal['inner', 'left',
     median_age_df.drop(columns='Median age - Sex: all - Age: all - Variant: medium', inplace=True)
     median_age_df.rename(columns={'Median age - Sex: all - Age: all - Variant: estimates': 'median_age'}, inplace=True)
     median_age_df.dropna(subset='median_age', inplace=True)
+
     merged_df = pd.merge(merged_df, median_age_df, on=to_merge_on, how=how, copy=False)
+
+    rename_dict = {'Country Name': 'country', 'Time': 'year', 'Country Code': 'iso_code'}
+    demographics_df = pd.read_csv("https://dataset-ml-project.s3.us-east-2.amazonaws.com/Demographics_WDI.csv")
+    # source: https://databank.worldbank.org/reports.aspx?source=world-development-indicators
+    demographics_df.rename(columns=rename_dict, inplace=True)
+    cols = [i for i in demographics_df.columns if i not in ["country", "Time Code", "iso_code"]]
+    for col in cols:
+        demographics_df.drop(index=demographics_df[demographics_df[col] == '..'].index, inplace=True)
+        demographics_df[col] = pd.to_numeric(demographics_df[col])
+
+    merged_df = pd.merge(merged_df, demographics_df, on=to_merge_on, how='left', copy=False)
 
     columns = merged_df.columns
     new_columns = [x.lower().replace(" ", "_") for x in columns]
     for i in range(0, len(columns)):
         merged_df.rename(columns={columns[i]: new_columns[i]}, inplace=True)
 
+    merged_df.dropna(subset=['co2'], inplace=True)
     return merged_df
 
 
