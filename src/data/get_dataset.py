@@ -33,16 +33,16 @@ def get_merged_datasets(how: Literal['inner', 'left', 'right', 'outer', 'cross']
     csv_data.dropna(subset=['gdp', 'co2'], inplace=True)
     csv_data.query('year >= 2000', inplace=True)
 
-    return get_extra_features(csv_data, to_merge_on, how)
+    return get_extra_features(csv_data, to_merge_on)
 
 
-def get_extra_features(df: DataFrame, to_merge_on, how: Literal['inner', 'left', 'right', 'outer', 'cross'] = 'inner'):
+def get_extra_features(df: DataFrame, to_merge_on):
     """
     Adds land-use, median age, and population data per country and per year to the main dataset.
     @param df: main data frame to add other features on
     @param to_merge_on: columns to merge data set on
-    @param how: {'inner', 'left', 'right', 'outer', 'cross'}, default 'inner'
     """
+    how = 'left'
     rename_dict = {'Entity': 'country', 'Year': 'year', 'Code': 'iso_code'}
 
     land_use_df = pd.read_csv(
@@ -62,16 +62,26 @@ def get_extra_features(df: DataFrame, to_merge_on, how: Literal['inner', 'left',
 
     merged_df = pd.merge(merged_df, median_age_df, on=to_merge_on, how=how, copy=False)
 
+    military_expenditure_df = pd.read_csv("https://dataset-ml-project.s3.us-east-2.amazonaws.com"
+                                          "/military-expenditure-share-gdp.csv")
+    # https://ourworldindata.org/grapher/military-expenditure-share-gdp
+    military_expenditure_df.rename(columns=rename_dict, inplace=True)
+    merged_df = pd.merge(merged_df, military_expenditure_df, on=to_merge_on, how=how, copy=False)
+
     rename_dict = {'Country Name': 'country', 'Time': 'year', 'Country Code': 'iso_code'}
     demographics_df = pd.read_csv("https://dataset-ml-project.s3.us-east-2.amazonaws.com/Demographics_WDI.csv")
     # source: https://databank.worldbank.org/reports.aspx?source=world-development-indicators
     demographics_df.rename(columns=rename_dict, inplace=True)
-    cols = [i for i in demographics_df.columns if i not in ["country", "Time Code", "iso_code"]]
-    for col in cols:
-        demographics_df.drop(index=demographics_df[demographics_df[col] == '..'].index, inplace=True)
-        demographics_df[col] = pd.to_numeric(demographics_df[col])
+    remove_elipses(demographics_df)
 
-    merged_df = pd.merge(merged_df, demographics_df, on=to_merge_on, how='left', copy=False)
+    merged_df = pd.merge(merged_df, demographics_df, on=to_merge_on, how=how, copy=False)
+    import_export_df = pd.read_csv("https://dataset-ml-project.s3.us-east-2.amazonaws.com"
+                                   "/Imports_exports_from_WDI_Data.csv")
+
+    import_export_df.rename(columns=rename_dict, inplace=True)
+    remove_elipses(import_export_df)
+
+    merged_df = pd.merge(merged_df, import_export_df, on=to_merge_on, how=how, copy=False)
 
     columns = merged_df.columns
     new_columns = [x.lower().replace(" ", "_") for x in columns]
@@ -80,6 +90,14 @@ def get_extra_features(df: DataFrame, to_merge_on, how: Literal['inner', 'left',
 
     merged_df.dropna(subset=['co2'], inplace=True)
     return merged_df
+
+
+def remove_elipses(df):
+    df.drop(columns=["Time Code"], inplace=True)
+    cols = [i for i in df.columns if i not in ["country", "Time Code", "iso_code"]]
+    for col in cols:
+        df.drop(index=df[df[col] == '..'].index, inplace=True)
+        df[col] = pd.to_numeric(df[col])
 
 
 if __name__ == '__main__':
