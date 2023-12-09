@@ -39,7 +39,7 @@ def get_merged_datasets(how: Literal['inner', 'left', 'right', 'outer', 'cross']
 def get_extra_features(df: DataFrame, to_merge_on):
     """
     Adds land-use, median age, and population data per country and per year to the main dataset.
-    @param df: main data frame to add other features on
+    @param df: main data frame to add other pipeline on
     @param to_merge_on: columns to merge data set on
     """
     how = 'left'
@@ -77,6 +77,7 @@ def get_extra_features(df: DataFrame, to_merge_on):
     merged_df = pd.merge(merged_df, demographics_df, on=to_merge_on, how=how, copy=False)
     import_export_df = pd.read_csv("https://dataset-ml-project.s3.us-east-2.amazonaws.com"
                                    "/Imports_exports_from_WDI_Data.csv")
+    # source: https://databank.worldbank.org/reports.aspx?source=world-development-indicators
 
     import_export_df.rename(columns=rename_dict, inplace=True)
     remove_elipses(import_export_df)
