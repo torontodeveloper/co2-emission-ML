@@ -15,6 +15,7 @@ import pandas as pd
 
 dataframe = src.data.get_dataset.get_merged_datasets()
 
+
 def is_data_leak(s, to_exclude):
     for data_leak in to_exclude:
         if data_leak in s:
@@ -84,9 +85,18 @@ def combine_population_gendered_features(df=dataframe):
     df.drop(columns=male_features, inplace=True)
     return
 
-def pipeline(df, test_size=0.2, random_state=42):
-    data_pipeline = Pipeline(steps=[("imputer", SimpleImputer(strategy="median")), ('std_scalar', StandardScaler())])
+
+def drop_repeat_fuel_data(df=dataframe):
+    drop_list = ['_per_', 'electricity', '_share_']
+    for feature in df.columns:
+        if any(item in feature for item in drop_list):
+            df.drop(columns=feature, inplace=True)
+
+
+def pipeline(df=dataframe, test_size=0.2, random_state=42):
+    data_pipeline = Pipeline(steps=[("imputer", SimpleImputer(strategy="mean")), ('std_scalar', StandardScaler())])
     combine_population_gendered_features(df)
+    drop_repeat_fuel_data(df)
     feature_list = get_features_no_data_leaks(df)
     x = df[feature_list]
     y = df['co2']
@@ -94,4 +104,5 @@ def pipeline(df, test_size=0.2, random_state=42):
     data_pipeline.fit(x_train)
     x_train = data_pipeline.transform(x_train)
     x_test = data_pipeline.transform(x_test)
-    return x_train, x_test, y_train, y_test, feature_list
+    return pd.DataFrame(x_train, columns=feature_list), pd.DataFrame(x_test, columns=feature_list), y_train, \
+           y_test, feature_list

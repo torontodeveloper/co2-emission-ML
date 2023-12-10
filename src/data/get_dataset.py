@@ -72,7 +72,7 @@ def get_extra_features(df: DataFrame, to_merge_on):
     demographics_df = pd.read_csv("https://dataset-ml-project.s3.us-east-2.amazonaws.com/Demographics_WDI.csv")
     # source: https://databank.worldbank.org/reports.aspx?source=world-development-indicators
     demographics_df.rename(columns=rename_dict, inplace=True)
-    remove_elipses(demographics_df)
+    demographics_df.drop(columns='Time Code', inplace=True)
 
     merged_df = pd.merge(merged_df, demographics_df, on=to_merge_on, how=how, copy=False)
     import_export_df = pd.read_csv("https://dataset-ml-project.s3.us-east-2.amazonaws.com"
@@ -80,7 +80,7 @@ def get_extra_features(df: DataFrame, to_merge_on):
     # source: https://databank.worldbank.org/reports.aspx?source=world-development-indicators
 
     import_export_df.rename(columns=rename_dict, inplace=True)
-    remove_elipses(import_export_df)
+    import_export_df.drop(columns=['Time Code'], inplace=True)
 
     merged_df = pd.merge(merged_df, import_export_df, on=to_merge_on, how=how, copy=False)
 
@@ -90,12 +90,12 @@ def get_extra_features(df: DataFrame, to_merge_on):
         merged_df.rename(columns={columns[i]: new_columns[i]}, inplace=True)
 
     merged_df.dropna(subset=['co2'], inplace=True)
+    remove_elipses(merged_df)
     return merged_df
 
 
 def remove_elipses(df):
-    df.drop(columns=["Time Code"], inplace=True)
-    cols = [i for i in df.columns if i not in ["country", "Time Code", "iso_code"]]
+    cols = [i for i in df.columns if i not in ["country", "iso_code"]]
     for col in cols:
         df.drop(index=df[df[col] == '..'].index, inplace=True)
         df[col] = pd.to_numeric(df[col])
