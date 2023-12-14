@@ -15,7 +15,6 @@ import pandas as pd
 def get_feature_importance(x_train, y_train, feature_list,
                            type : Literal["Linear", "RandomForest", "Tree"] = "Linear",
                            random_state=42):
-
     if type == "Linear":
         model = LinearRegression()
         model.fit(x_train, y_train)

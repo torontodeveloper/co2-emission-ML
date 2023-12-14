@@ -1,6 +1,0 @@
-model,fit_intercept,alpha,max_iter,tol,bootstrap,max_depth,max_features,min_samples_leaf,min_samples_split,n_estimators
-linear regression,True,,,,,,,,,
-lesso,,0.1,2000.0,0.0001,,,,,,
-ridge,,0.1,100.0,0.01,,,,,,
-Forest,,,,,False,50.0,sqrt,1.0,2.0,1000.0
-Tree,,,,,,20.0,sqrt,1.0,2.0,
